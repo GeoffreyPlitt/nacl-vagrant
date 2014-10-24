@@ -26,8 +26,20 @@ $BOOTSTRAP_SCRIPT = <<EOF
     ./nacl_sdk/pepper_37/lib/linux_host ./nacl_sdk/pepper_37/lib/pnacl ./nacl_sdk/pepper_37/lib/newlib_arm \
     ./nacl_sdk/pepper_37/examples ./nacl_sdk/pepper_37/toolchain/linux_x86_glibc
 
-  # general cleanup
-  rm -rf /var/lib/apt/lists/*
+  ########## CLEANUP AND SHRINK SPACE
+  # Remove APT files
+  find /var/lib/apt -type f | xargs rm -f
+  # Remove documentation files
+  find /var/lib/doc -type f | xargs rm -f
+  # Remove Virtualbox specific files
+  rm -rf /usr/src/vboxguest* /usr/src/virtualbox-ose-guest*
+  apt-get clean -y
+  apt-get autoclean -y
+  # Zero free space to aid VM compression
+  dd if=/dev/zero of=/EMPTY bs=1M
+  rm -f /EMPTY
+  echo 'Cleanup log files'
+  find /var/log -type f | while read f; do echo -ne '' > $f; done;
 
   echo VAGRANT IS READY.
 EOF
